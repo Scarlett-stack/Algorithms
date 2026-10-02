@@ -1,0 +1,241 @@
+{
+    "Resources": {
+	"VPC": {
+		"Type": "AWS::EC2::VPC",
+		"Properties": {
+			"CidrBlock": "10.0.0.0/16", 
+			"EnableDnsSupport": "true",
+			"EnableHostnames": "true"
+		},
+		"Tags": [
+			{
+				"Key": "Name",
+				"Value": "${vpc}"
+			},
+			{
+				"Key": "Maintainer",
+				"Value": {
+					"Ref": "Maintainer"
+				}
+			}
+		]
+	},
+	"Public Subnet 1": {
+		"Type": "AWS::EC2::Subnet",
+		"Properties": {
+			"VpcId": {
+				"Ref": "VPC"
+			},
+			"CidrBlock": "10.0.1.0/24",
+			"MapPublicIpOnLaunch" : "True",
+			"AvailabilityZone" : "{az1}"
+		},
+		"Tags": [
+			{
+				"Key": "Name",
+				"Value": "${subnet1}"
+			},
+			{
+				"Key": "Maintainer",
+				"Value": {
+					"Ref": "Maintainer"
+				}
+			}
+		]
+	},
+	"Public Subnet 2": {
+		"Type": "AWS::EC2::Subnet",
+		"Properties": {
+			"VpcId": {
+			"Ref": "VPC"
+			},
+			"CidrBlock": "10.0.2.0/24",
+			"MapPublicIpOnLaunch" : "True",
+			"AvailabilityZone" : "{az2}"
+		},
+		"Tags": [
+			{
+				"Key": "Name",
+				"Value": "${subnet1}"
+			},
+			{
+				"Key": "Maintainer",
+				"Value": {
+					"Ref": "Maintainer"
+				}
+			}
+		]		
+	},
+	"InternetGateway": {
+		"Type" : "AWS::EC2::InternetGateway",
+		"Properties": {
+			"Tags": [
+			{
+				"Key": "Name",
+				"Value": "${igw}"
+			},
+			{
+				"Key": "Maintainer",
+				"Value": {
+					"Ref": "Maintainer"
+				}
+			}
+		]
+		}
+	},
+	"InternetGatewayAttachement": {
+		"Type" : "AWS::EC2::VPCGatewayAttachment",
+		"Properties": {
+			"InternetGatewayId" : {
+				"Ref": "InternetGateway"
+			},
+			"VpcId" : {
+				"Ref": "VPC"
+			}
+		}
+	},
+	
+	"Public Routing Table 1": {
+	  "Type" : "AWS::EC2::RouteTable",
+	  "Properties" : {
+	      "Tags": [
+			{
+				"Key": "Name",
+				"Value": "${rt1}"
+			},
+			{
+				"Key": "Maintainer",
+				"Value": {
+					"Ref": "Maintainer"
+				}
+			}
+		],
+	      "VpcId" : { "Ref": "VPC" }
+		}
+	},
+	"Route1" : {
+	   "Type" : "AWS::EC2::Route",
+	   "DependsOn" : "InternetGateway",
+	   "Properties" : {
+	      "RouteTableId" : { "Ref" : "Public Routing Table 1" },
+	      "DestinationCidrBlock" : "0.0.0.0/0",
+	      "GatewayId" : { "Ref" : "InternetGateway" }
+	   }
+	},
+	"SubnetRouteTableAssociation1" : {
+	   "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+	   "Properties" : {
+	      "SubnetId" : { "Ref" : "Public Subnet 1" },
+	      "RouteTableId" : { "Ref" : "Public Routing Table 1" }
+	   }
+	},
+	
+	"Public Routing Table 2": {
+	  "Type" : "AWS::EC2::RouteTable",
+	  "Properties" : {
+	      "Tags": [
+			{
+				"Key": "Name",
+				"Value": "${rt2}"
+			},
+			{
+				"Key": "Maintainer",
+				"Value": {
+					"Ref": "Maintainer"
+				}
+			}
+		],
+	      "VpcId" : { "Ref": "VPC" }
+		}
+	},
+	"Route2" : {
+	   "Type" : "AWS::EC2::Route",
+	   "DependsOn" : "InternetGateway",
+	   "Properties" : {
+	      "RouteTableId" : { "Ref" : "Public Routing Table 2" },
+	      "DestinationCidrBlock" : "0.0.0.0/0",
+	      "GatewayId" : { "Ref" : "InternetGateway" }
+	   }
+	},
+	"SubnetRouteTableAssociation2" : {
+	   "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+	   "Properties" : {
+	      "SubnetId" : { "Ref" : "Public Subnet 2" },
+	      "RouteTableId" : { "Ref" : "Public Routing Table 2" }
+	   }
+	},
+	"SecurityGroup" : {
+    "Type" : "AWS::EC2::SecurityGroup",
+    "Properties" : {
+        "GroupDescription" : "Allow ssh and http",
+        "VpcId" : {"Ref" : "myVPC"},
+        "SecurityGroupIngress" : [{
+            "IpProtocol" : "tcp",
+            "FromPort" : 22,
+            "ToPort" : 22,
+            "CidrIp" : "0.0.0.0/0"
+        }],
+        "Tags": [
+			{
+				"Key": "Name",
+				"Value": "${sg}"
+			},
+			{
+				"Key": "Maintainer",
+				"Value": {
+					"Ref": "Maintainer"
+				}
+			}
+		]
+
+    }
+    },
+    "IAMRole": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+            "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [{
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": [
+                            "ec2.amazonaws.com"
+                        ]
+                    },
+                    "Action": [
+                        "sts:AssumeRole"
+                    ]
+            }]
+            },
+            "ManagedPolicyArns": [
+                "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+            ],
+            "Tags": [
+            {
+            "Key": "Maintainer",
+            "Value": {
+                "Ref": "Maintainer"
+            }
+            }
+        ]
+        }
+    },
+    "MyInstanceProfile": {
+    "Type": "AWS::IAM::InstanceProfile",
+    "Properties": {
+      "Roles": [
+        {
+          "Ref": "MyIAMRole"
+        }
+      ]
+    }
+  }
+}
+},
+"Parameters": {
+	"Maintainer": {
+		"Description": "idk ce e cu acest parametru",
+		"Type": "String",
+		"Default": "${maintainer}"
+	}
+}
