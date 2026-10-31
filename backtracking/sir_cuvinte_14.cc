@@ -137,7 +137,7 @@ void copy(const vector<string> &sol, vector<string> &sol_max, int nr_cuvinte) {
     }
 }
 
-void back(vector<std::string> &sol, vector<std::string> &sol_max,vector<std::string> &cuvinte, vector<int> &vizitat, vector<int> &freq, int k, int n, int m, int max_len, int current_len) {
+void back(vector<std::string> &sol, vector<std::string> &sol_max,vector<std::string> &cuvinte, vector<int> &vizitat, vector<int> &freq, int k, int n, int m, int &max_len, int current_len) {
     if (k == n)
         return;
     else {
