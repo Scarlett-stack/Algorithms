@@ -1,6 +1,6 @@
 CXX = g++ # program for compiling
 CFLAGS = -g 
-SRC ?= morse.cc # daca nu am primit argumet fallback la ata
+SRC ?= sport.cc # daca nu am primit argumet fallback la ata
 EXEC = $(basename $(SRC))
 # $(echo "$SRC" | cut -d '.' -f 1)
 
@@ -15,3 +15,5 @@ $(EXEC): $(SRC)
 
 clean:
 	find . -executable -type f | xargs rm
+
+# se ruleaza cu make SRC=operatori_11.cc
